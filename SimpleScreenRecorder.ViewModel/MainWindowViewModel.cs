@@ -5,7 +5,6 @@ using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Windows;
 
 namespace SimpleScreenRecorder.ViewModel
 {
@@ -16,21 +15,19 @@ namespace SimpleScreenRecorder.ViewModel
         public ICommand ToggleRecordCommand { get; }
 
         private Timer _screenCaptureTimer { get; }
-        private Recorder _recorder { get; }
 
         public MainWindowViewModel()
         {
             _dispatcher = Dispatcher.CurrentDispatcher;
 
-            _recorder = new Recorder();
-            Screens = _recorder.GetScreens();
+            Screens = Recorder.Instance.GetScreens();
 
             SelectDisplayCommand = new RelayCommand(o => OnDisplaySelected(o));
             ToggleRecordCommand = new RelayCommand(o => OnToggleRecord(o));
 
             ToggleRecordButtonText = "Start";
 
-            _screenCaptureTimer = new Timer { Interval = 1000 };
+            _screenCaptureTimer = new Timer();
             _screenCaptureTimer.Elapsed += ScreenCaptureTimer_Elapsed;
         }
 
@@ -38,14 +35,14 @@ namespace SimpleScreenRecorder.ViewModel
         {
             _dispatcher.Invoke(() =>
             {
-                ScreenBitmap = _recorder.GetBitmapImage();
+                ScreenBitmap = Recorder.Instance.GetBitmapImage();
             });
         }
 
         private void OnDisplaySelected(object args)
         {
             _screenCaptureTimer.Start();
-            _recorder.OnScreenSelect(SelectedScreen);
+            Recorder.Instance.OnScreenSelect(SelectedScreen);
         }
 
         private void OnToggleRecord(object args)
