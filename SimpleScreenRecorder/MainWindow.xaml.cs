@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using SimpleScreenRecorder.Model;
+using System.Windows;
 
 namespace SimpleScreenRecorder.View
 {
@@ -10,6 +11,8 @@ namespace SimpleScreenRecorder.View
         public MainWindow()
         {
             InitializeComponent();
+
+            DispatcherService.Instance.Init();
         }
     }
 }

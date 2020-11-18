@@ -10,7 +10,6 @@ namespace SimpleScreenRecorder.ViewModel
 {
     public class MainWindowViewModel : BaseViewModel
     {
-        Dispatcher _dispatcher { get; }
         public ICommand SelectDisplayCommand { get; }
         public ICommand ToggleRecordCommand { get; }
 
@@ -18,8 +17,6 @@ namespace SimpleScreenRecorder.ViewModel
 
         public MainWindowViewModel()
         {
-            _dispatcher = Dispatcher.CurrentDispatcher;
-
             Screens = Recorder.Instance.GetScreens();
 
             SelectDisplayCommand = new RelayCommand(o => OnDisplaySelected(o));
@@ -33,7 +30,7 @@ namespace SimpleScreenRecorder.ViewModel
 
         private void ScreenCaptureTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            _dispatcher.Invoke(() =>
+            DispatcherService.Instance.BeginInvoke(() =>
             {
                 ScreenBitmap = Recorder.Instance.GetBitmapImage();
             });
