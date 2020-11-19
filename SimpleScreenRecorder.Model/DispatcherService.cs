@@ -9,9 +9,9 @@ namespace SimpleScreenRecorder.Model
 
         public void Init() => _dispatcher = Dispatcher.CurrentDispatcher;
 
-        public void Invoke(Action action) => _dispatcher.Invoke(action);
+        public void Invoke(Action action) => _dispatcher?.Invoke(action);
 
-        public void BeginInvoke(Action action) => _dispatcher.BeginInvoke(action);
+        public void BeginInvoke(Action action) => _dispatcher?.BeginInvoke(action);
 
         #region Singleton implementation
         private static DispatcherService instance = null;

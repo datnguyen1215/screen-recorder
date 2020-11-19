@@ -10,24 +10,35 @@ namespace SimpleScreenRecorder.ViewModel
 {
     public class MainWindowViewModel : BaseViewModel
     {
+        #region ICommand
         public ICommand SelectDisplayCommand { get; }
-        public ICommand ToggleRecordCommand { get; }
+        public ICommand StartPauseCommand { get; }
+        public ICommand StopCommand { get; }
+        #endregion
 
         private Timer _screenCaptureTimer { get; }
 
         public MainWindowViewModel()
         {
             Screens = Recorder.Instance.GetScreens();
-
-            SelectDisplayCommand = new RelayCommand(o => OnDisplaySelected(o));
-            ToggleRecordCommand = new RelayCommand(o => OnToggleRecord(o));
-
-            ToggleRecordButtonText = "Start";
-
             _screenCaptureTimer = new Timer();
             _screenCaptureTimer.Elapsed += ScreenCaptureTimer_Elapsed;
+
+            SelectDisplayCommand = new RelayCommand(o => OnDisplaySelected(o));
+            StartPauseCommand = new RelayCommand(o => OnStartPauseButtonClicked(o));
+            StopCommand = new RelayCommand(o => OnStopButtonClicked(o));
+
+            IsStopButtonEnabled = false;
+
+            // Auto-select the first screen.
+            SelectedScreen = Screens[0];
+            OnDisplaySelected(this);
         }
 
+
+        /// <summary>
+        /// Triggered when screen capture timer elapsed.
+        /// </summary>
         private void ScreenCaptureTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             DispatcherService.Instance.BeginInvoke(() =>
@@ -36,16 +47,36 @@ namespace SimpleScreenRecorder.ViewModel
             });
         }
 
+        /// <summary>
+        /// Triggered when new display is selected.
+        /// </summary>
         private void OnDisplaySelected(object args)
         {
             _screenCaptureTimer.Start();
             Recorder.Instance.OnScreenSelect(SelectedScreen);
         }
 
-        private void OnToggleRecord(object args)
+        /// <summary>
+        /// Triggered when Start/Pause button is clicked.
+        /// </summary>
+        private void OnStartPauseButtonClicked(object args)
         {
-            Console.WriteLine("Toggle record");
+            _screenCaptureTimer.Stop();
+            Recorder.Instance.Start();
+            IsStopButtonEnabled = true;
         }
+
+        /// <summary>
+        /// Triggered when Stop button is clicked.
+        /// </summary>
+        private void OnStopButtonClicked(object o)
+        {
+            Recorder.Instance.Stop();
+            ScreenBitmap = null;
+            IsStopButtonEnabled = false;
+        }
+
+        #region UI Properties
 
         private BitmapImage _screenBitmap { get; set; }
         public BitmapImage ScreenBitmap
@@ -58,13 +89,25 @@ namespace SimpleScreenRecorder.ViewModel
             }
         }
 
-        private string _toggleRecordButtonText { get; set; }
-        public string ToggleRecordButtonText
+        private bool _isStopButtonEnabled { get; set; }
+        public bool IsStopButtonEnabled
         {
-            get => _toggleRecordButtonText;
+            get => _isStopButtonEnabled;
             set
             {
-                _toggleRecordButtonText = value;
+                _isStopButtonEnabled = value;
+                StartPauseButtonText = value ? "Pause" : "Start";
+                OnPropertyChanged();
+            }
+        }
+
+        private string _startPauseButtonText { get; set; }
+        public string StartPauseButtonText
+        {
+            get => _startPauseButtonText;
+            set
+            {
+                _startPauseButtonText = value;
                 OnPropertyChanged();
             }
         }
@@ -90,5 +133,7 @@ namespace SimpleScreenRecorder.ViewModel
                 OnPropertyChanged();
             }
         }
+
+        #endregion
     }
 }

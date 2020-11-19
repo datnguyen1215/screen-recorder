@@ -19,7 +19,8 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </ComboBox>
-        <Button Content="{Binding ToggleRecordButtonText}" HorizontalAlignment="Left" Height="38" Margin="63,312,0,0" VerticalAlignment="Top" Width="95" Command="{Binding ToggleRecordCommand}"/>
+        <Button Content="{Binding StartPauseButtonText}" HorizontalAlignment="Left" Height="38" Margin="63,312,0,0" VerticalAlignment="Top" Width="95" Command="{Binding StartPauseCommand}"/>
+        <Button Content="Stop" IsEnabled="{Binding IsStopButtonEnabled}" HorizontalAlignment="Left" Height="38" Margin="190,312,0,0" VerticalAlignment="Top" Width="95" Command="{Binding StopCommand}"/>
         <Image HorizontalAlignment="Left" Height="152" Margin="63,133,0,0" VerticalAlignment="Top" Width="275" Source="{Binding ScreenBitmap}"/>
     </Grid>
 </Window>

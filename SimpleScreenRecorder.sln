@@ -12,21 +12,35 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Debug|x86.Build.0 = Debug|Any CPU
 		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Release|x86.ActiveCfg = Release|Any CPU
+		{2B06D1DF-940C-4CCE-A9CC-D921CAACE46A}.Release|x86.Build.0 = Release|Any CPU
 		{35D84D84-1D29-441D-9A47-95458A422460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{35D84D84-1D29-441D-9A47-95458A422460}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35D84D84-1D29-441D-9A47-95458A422460}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{35D84D84-1D29-441D-9A47-95458A422460}.Debug|x86.Build.0 = Debug|Any CPU
 		{35D84D84-1D29-441D-9A47-95458A422460}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35D84D84-1D29-441D-9A47-95458A422460}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35D84D84-1D29-441D-9A47-95458A422460}.Release|x86.ActiveCfg = Release|Any CPU
+		{35D84D84-1D29-441D-9A47-95458A422460}.Release|x86.Build.0 = Release|Any CPU
 		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Debug|x86.ActiveCfg = Debug|x86
+		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Debug|x86.Build.0 = Debug|x86
 		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Release|x86.ActiveCfg = Release|x86
+		{14A241BF-3DAC-45CF-9F2E-A57BD4563900}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

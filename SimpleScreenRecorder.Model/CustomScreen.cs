@@ -8,6 +8,8 @@ namespace SimpleScreenRecorder.Model
     public class CustomScreen
     {
         public string Name { get => NativeScreen.DeviceName.Trim(); }
+        public int Width { get => NativeScreen.Bounds.Width; }
+        public int Height { get => NativeScreen.Bounds.Height; }
         public Screen NativeScreen { get; }
 
         public CustomScreen(Screen native)
@@ -15,16 +17,26 @@ namespace SimpleScreenRecorder.Model
             NativeScreen = native;
         }
 
+        /// <summary>
+        /// Getting bitmap.
+        ///
+        /// Used for recording.
+        /// </summary>
         public Bitmap GetBitmap()
         {
             Bitmap bitmap = new Bitmap(NativeScreen.Bounds.Width, NativeScreen.Bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             using (Graphics graphic = Graphics.FromImage(bitmap))
             {
                 graphic.CopyFromScreen(NativeScreen.Bounds.X, NativeScreen.Bounds.Y, 0, 0, NativeScreen.Bounds.Size, CopyPixelOperation.SourceCopy);
+                return bitmap;
             }
-            return bitmap;
         }
 
+        /// <summary>
+        /// Getting bitmap image.
+        ///
+        /// This is used for displaying preview image.
+        /// </summary>
         public BitmapImage GetBitmapImage()
         {
             using (MemoryStream stream = new MemoryStream())
