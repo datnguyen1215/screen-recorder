@@ -21,7 +21,10 @@ namespace SimpleScreenRecorder.ViewModel
         public MainWindowViewModel()
         {
             Screens = Recorder.Instance.GetScreens();
-            _screenCaptureTimer = new Timer();
+            Recorder.Instance.Paused += Recorder_Paused;
+            Recorder.Instance.Started += Recorder_Started;
+            Recorder.Instance.Stopped += Recorder_Stopped;
+            _screenCaptureTimer = new Timer { Interval = 1000 };
             _screenCaptureTimer.Elapsed += ScreenCaptureTimer_Elapsed;
 
             SelectDisplayCommand = new RelayCommand(o => OnDisplaySelected(o));
@@ -29,6 +32,7 @@ namespace SimpleScreenRecorder.ViewModel
             StopCommand = new RelayCommand(o => OnStopButtonClicked(o));
 
             IsStopButtonEnabled = false;
+            StartPauseButtonText = "Start";
 
             // Auto-select the first screen.
             SelectedScreen = Screens[0];
@@ -54,6 +58,7 @@ namespace SimpleScreenRecorder.ViewModel
         {
             _screenCaptureTimer.Start();
             Recorder.Instance.OnScreenSelect(SelectedScreen);
+            ScreenBitmap = Recorder.Instance.GetBitmapImage();
         }
 
         /// <summary>
@@ -62,8 +67,12 @@ namespace SimpleScreenRecorder.ViewModel
         private void OnStartPauseButtonClicked(object args)
         {
             _screenCaptureTimer.Stop();
-            Recorder.Instance.Start();
             IsStopButtonEnabled = true;
+
+            if (Recorder.Instance.IsStarted && !Recorder.Instance.IsPaused)
+                Recorder.Instance.Pause();
+            else
+                Recorder.Instance.Start();
         }
 
         /// <summary>
@@ -75,6 +84,10 @@ namespace SimpleScreenRecorder.ViewModel
             ScreenBitmap = null;
             IsStopButtonEnabled = false;
         }
+
+        private void Recorder_Paused(object sender, EventArgs e) => StartPauseButtonText = "Start";
+        private void Recorder_Stopped(object sender, EventArgs e) => StartPauseButtonText = "Start";
+        private void Recorder_Started(object sender, EventArgs e) => StartPauseButtonText = "Pause";
 
         #region UI Properties
 
@@ -96,7 +109,6 @@ namespace SimpleScreenRecorder.ViewModel
             set
             {
                 _isStopButtonEnabled = value;
-                StartPauseButtonText = value ? "Pause" : "Start";
                 OnPropertyChanged();
             }
         }

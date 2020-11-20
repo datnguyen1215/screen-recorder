@@ -125,7 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleScreenRecorder.Model\SimpleScreenRecorder.Model.csproj">
-      <Project>{14A241BF-3DAC-45CF-9F2E-A57BD4563900}</Project>
+      <Project>{14a241bf-3dac-45cf-9f2e-a57bd4563900}</Project>
       <Name>SimpleScreenRecorder.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\SimpleScreenRecorder.ViewModel\SimpleScreenRecorder.ViewModel.csproj">

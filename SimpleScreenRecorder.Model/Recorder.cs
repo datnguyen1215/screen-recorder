@@ -1,6 +1,7 @@
 ﻿using Accord.Video.FFMPEG;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
@@ -22,6 +23,14 @@ namespace SimpleScreenRecorder.Model
         /// Framerate to record. Default is 30.
         /// </summary>
         public int FrameRate { get; set; }
+        /// <summary>
+        /// Indication whether Recorder has started.
+        /// </summary>
+        public bool IsStarted { get; private set; }
+        /// <summary>
+        /// Indication whether it's paused.
+        /// </summary>
+        public bool IsPaused { get; private set; }
         #endregion
 
         #region Private properties
@@ -41,6 +50,7 @@ namespace SimpleScreenRecorder.Model
         /// Used to make sure framerate is correctly recorded.
         /// </summary>
         private Timer _timer { get; }
+        private Stopwatch _stopwatch { get; }
         #endregion
 
         private Recorder()
@@ -49,6 +59,7 @@ namespace SimpleScreenRecorder.Model
             _timer = new Timer { Interval = 1000 / FrameRate };
             _timer.Tick += Timer_Tick;
             _videoWriter = new VideoFileWriter();
+            _stopwatch = new Stopwatch();
         }
 
         #region Public methods
@@ -57,11 +68,29 @@ namespace SimpleScreenRecorder.Model
         /// </summary>
         public void Start()
         {
+            if (!IsStarted)
+            {
+                IsStarted = true;
+                _videoPath = Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4");
+                Console.WriteLine($"path={_videoPath}");
+                _videoWriter.Open(_videoPath, _currentScreen.Width, _currentScreen.Height, FrameRate, VideoCodec.H264, 0);
+            }
+
+            _stopwatch.Start();
             _timer.Start();
-            _videoPath = Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4");
-            Console.WriteLine($"path={_videoPath}");
-            _videoWriter.Open(_videoPath, _currentScreen.Width, _currentScreen.Height, FrameRate, VideoCodec.H264, 0);
+            IsPaused = false;
             Started?.Invoke(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// Pause recording.
+        /// </summary>
+        public void Pause()
+        {
+            IsPaused = true;
+            _timer.Stop();
+            _stopwatch.Stop();
+            Paused?.Invoke(this, new EventArgs());
         }
 
         /// <summary>
@@ -70,8 +99,11 @@ namespace SimpleScreenRecorder.Model
         public void Stop()
         {
             _timer.Stop();
+            _stopwatch.Stop();
+            _stopwatch.Reset();
             _videoWriter.Close();
             _videoPath = null;
+            IsStarted = IsPaused = false;
             Stopped?.Invoke(this, new EventArgs());
         }
 
@@ -115,9 +147,7 @@ namespace SimpleScreenRecorder.Model
         private void Timer_Tick(object sender, EventArgs e)
         {
             using (var bitmap = GetBitmap())
-            {
-                _videoWriter.WriteVideoFrame(bitmap);
-            }
+                _videoWriter.WriteVideoFrame(bitmap, _stopwatch.Elapsed);
         }
         #endregion
 
