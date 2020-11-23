@@ -1,5 +1,7 @@
 ﻿using SimpleScreenRecorder.Model;
+using System;
 using System.Windows;
+using System.Windows.Interop;
 
 namespace SimpleScreenRecorder.View
 {
@@ -12,6 +14,8 @@ namespace SimpleScreenRecorder.View
         {
             InitializeComponent();
 
+            IntPtr hWnd = new WindowInteropHelper(this).EnsureHandle();
+            HotkeyManager.Instance.Init(hWnd);
             DispatcherService.Instance.Init();
         }
     }

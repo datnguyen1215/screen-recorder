@@ -79,7 +79,7 @@ namespace SimpleScreenRecorder.Model
             _stopwatch.Start();
             _timer.Start();
             IsPaused = false;
-            Started?.Invoke(this, new EventArgs());
+            Started?.Invoke(this, new System.EventArgs());
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace SimpleScreenRecorder.Model
             IsPaused = true;
             _timer.Stop();
             _stopwatch.Stop();
-            Paused?.Invoke(this, new EventArgs());
+            Paused?.Invoke(this, new System.EventArgs());
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace SimpleScreenRecorder.Model
             _videoWriter.Close();
             _videoPath = null;
             IsStarted = IsPaused = false;
-            Stopped?.Invoke(this, new EventArgs());
+            Stopped?.Invoke(this, new System.EventArgs());
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace SimpleScreenRecorder.Model
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object sender, System.EventArgs e)
         {
             using (var bitmap = GetBitmap())
                 _videoWriter.WriteVideoFrame(bitmap, _stopwatch.Elapsed);

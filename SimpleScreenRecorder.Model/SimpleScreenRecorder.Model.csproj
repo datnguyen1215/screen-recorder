@@ -77,6 +77,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DispatcherService.cs" />
+    <Compile Include="Enums\KeyModifiers.cs" />
+    <Compile Include="EventArgs\HotkeyEventArgs.cs" />
+    <Compile Include="Hotkey.cs" />
+    <Compile Include="HotkeyManager.cs" />
     <Compile Include="Recorder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CustomScreen.cs" />
