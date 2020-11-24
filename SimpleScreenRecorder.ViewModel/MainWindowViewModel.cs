@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
+using System.Windows.Forms;
+using SimpleScreenRecorder.Model.Enums;
 
 namespace SimpleScreenRecorder.ViewModel
 {
@@ -16,7 +17,7 @@ namespace SimpleScreenRecorder.ViewModel
         public ICommand StopCommand { get; }
         #endregion
 
-        private Timer _screenCaptureTimer { get; }
+        private System.Timers.Timer _screenCaptureTimer { get; }
 
         public MainWindowViewModel()
         {
@@ -24,7 +25,8 @@ namespace SimpleScreenRecorder.ViewModel
             Recorder.Instance.Paused += Recorder_Paused;
             Recorder.Instance.Started += Recorder_Started;
             Recorder.Instance.Stopped += Recorder_Stopped;
-            _screenCaptureTimer = new Timer { Interval = 1000 };
+            HotkeyManager.Instance.HotkeyPressed += HotkeyManager_HotkeyPressed;
+            _screenCaptureTimer = new System.Timers.Timer { Interval = 1000 };
             _screenCaptureTimer.Elapsed += ScreenCaptureTimer_Elapsed;
 
             SelectDisplayCommand = new RelayCommand(o => OnDisplaySelected(o));
@@ -39,6 +41,34 @@ namespace SimpleScreenRecorder.ViewModel
             OnDisplaySelected(this);
         }
 
+        /// <summary>
+        /// Triggered when a registered hotkey is pressed.
+        ///
+        /// Please check HotkeyManager for registered hotkeys.
+        /// </summary>
+        private void HotkeyManager_HotkeyPressed(object sender, Model.EventArgs.HotkeyEventArgs e)
+        {
+            switch (e.Hotkey.Key)
+            {
+                case Keys.F9:
+                    // Skip if there are modifier keys.
+                    if (e.Hotkey.Modifiers != KeyModifiers.None)
+                        break;
+                    StartPauseRecorder();
+                    break;
+
+                case Keys.F10:
+                    // Skip if there are modifier keys.
+                    if (e.Hotkey.Modifiers != KeyModifiers.None)
+                        break;
+
+                    StopRecorder();
+                    break;
+
+                default:
+                    break;
+            }
+        }
 
         /// <summary>
         /// Triggered when screen capture timer elapsed.
@@ -62,9 +92,9 @@ namespace SimpleScreenRecorder.ViewModel
         }
 
         /// <summary>
-        /// Triggered when Start/Pause button is clicked.
+        /// Start/pause recorder.
         /// </summary>
-        private void OnStartPauseButtonClicked(object args)
+        private void StartPauseRecorder()
         {
             _screenCaptureTimer.Stop();
             IsStopButtonEnabled = true;
@@ -76,21 +106,33 @@ namespace SimpleScreenRecorder.ViewModel
         }
 
         /// <summary>
+        /// Stop recorder.
+        /// </summary>
+        private void StopRecorder()
+        {
+            if (Recorder.Instance.IsStarted)
+            {
+                Recorder.Instance.Stop();
+                ScreenBitmap = null;
+                IsStopButtonEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Triggered when Start/Pause button is clicked.
+        /// </summary>
+        private void OnStartPauseButtonClicked(object args) => StartPauseRecorder();
+
+        /// <summary>
         /// Triggered when Stop button is clicked.
         /// </summary>
-        private void OnStopButtonClicked(object o)
-        {
-            Recorder.Instance.Stop();
-            ScreenBitmap = null;
-            IsStopButtonEnabled = false;
-        }
+        private void OnStopButtonClicked(object o) => StopRecorder();
 
         private void Recorder_Paused(object sender, EventArgs e) => StartPauseButtonText = "Start";
         private void Recorder_Stopped(object sender, EventArgs e) => StartPauseButtonText = "Start";
         private void Recorder_Started(object sender, EventArgs e) => StartPauseButtonText = "Pause";
 
         #region UI Properties
-
         private BitmapImage _screenBitmap { get; set; }
         public BitmapImage ScreenBitmap
         {
