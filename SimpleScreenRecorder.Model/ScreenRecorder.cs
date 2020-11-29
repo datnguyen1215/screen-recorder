@@ -1,15 +1,15 @@
-﻿using Accord.Video.FFMPEG;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
+using ScreenRecorderLib;
 
 namespace SimpleScreenRecorder.Model
 {
-    public class Recorder
+    public class ScreenRecorder
     {
         #region Public events
         public event EventHandler Paused;
@@ -23,42 +23,29 @@ namespace SimpleScreenRecorder.Model
         /// </summary>
         public int FrameRate { get; set; }
         /// <summary>
-        /// Indication whether Recorder has started.
+        /// Status of the recorder.
         /// </summary>
-        public bool IsStarted { get; private set; }
-        /// <summary>
-        /// Indication whether it's paused.
-        /// </summary>
-        public bool IsPaused { get; private set; }
+        public RecorderStatus Status { get => _recorder != null ? _recorder.Status : RecorderStatus.Idle; }
         #endregion
 
         #region Private properties
         /// <summary>
         /// Currently selected screen.
         /// </summary>
-        private CustomScreen _currentScreen { get; set; }
+        private CustomScreen _currentDisplay { get; set; }
         /// <summary>
         /// Video path to be used.
         /// </summary>
         private string _videoPath { get; set; }
         /// <summary>
-        /// Used for writing video.
+        /// Library-provided recorder to start/stop recorder.
         /// </summary>
-        private VideoFileWriter _videoWriter { get; }
-        /// <summary>
-        /// Used to make sure framerate is correctly recorded.
-        /// </summary>
-        private Timer _timer { get; }
-        private Stopwatch _stopwatch { get; }
+        private Recorder _recorder { get; set; }
         #endregion
 
-        private Recorder()
+        private ScreenRecorder()
         {
-            FrameRate = 30;
-            _timer = new Timer { Interval = 1000 / FrameRate };
-            _timer.Tick += Timer_Tick;
-            _videoWriter = new VideoFileWriter();
-            _stopwatch = new Stopwatch();
+            FrameRate = 60;
         }
 
         #region Public methods
@@ -67,17 +54,22 @@ namespace SimpleScreenRecorder.Model
         /// </summary>
         public void Start()
         {
-            if (!IsStarted)
+            if (_recorder == null)
             {
-                IsStarted = true;
+
                 _videoPath = Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4");
-                Console.WriteLine($"path={_videoPath}");
-                _videoWriter.Open(_videoPath, _currentScreen.Width, _currentScreen.Height, FrameRate, VideoCodec.H264, 0);
+                var op = new RecorderOptions { VideoOptions = new VideoOptions { Framerate = FrameRate } };
+                _recorder = Recorder.CreateRecorder(op);
+                _recorder.OnRecordingComplete += Rec_OnRecordingComplete;
+                _recorder.OnRecordingFailed += Rec_OnRecordingFailed;
+                _recorder.OnStatusChanged += Rec_OnStatusChanged;
+                _recorder.Record(_videoPath);
+            }
+            else
+            {
+                _recorder.Resume();
             }
 
-            _stopwatch.Start();
-            _timer.Start();
-            IsPaused = false;
             Started?.Invoke(this, new System.EventArgs());
         }
 
@@ -86,9 +78,7 @@ namespace SimpleScreenRecorder.Model
         /// </summary>
         public void Pause()
         {
-            IsPaused = true;
-            _timer.Stop();
-            _stopwatch.Stop();
+            _recorder?.Pause();
             Paused?.Invoke(this, new System.EventArgs());
         }
 
@@ -97,30 +87,38 @@ namespace SimpleScreenRecorder.Model
         /// </summary>
         public void Stop()
         {
-            _timer.Stop();
-            _stopwatch.Stop();
-            _stopwatch.Reset();
-            _videoWriter.Close();
+            _recorder?.Stop();
             _videoPath = null;
-            IsStarted = IsPaused = false;
             Stopped?.Invoke(this, new System.EventArgs());
         }
 
         /// <summary>
         /// Get bitmap of the current selected screen.
         /// </summary>
-        public BitmapImage GetBitmapImage() => _currentScreen.GetBitmapImage();
+        public BitmapImage GetBitmapImage() => _currentDisplay.GetBitmapImage();
 
         /// <summary>
         /// Get bitmap of the current selected screen.
         /// </summary>
-        public Bitmap GetBitmap() => _currentScreen.GetBitmap();
+        public Bitmap GetBitmap() => _currentDisplay.GetBitmap();
 
         /// <summary>
         /// Triggered when there's a screen change.
         /// </summary>
         /// <param name="screen">New selected screen.</param>
-        public void OnScreenSelect(CustomScreen screen) => _currentScreen = screen;
+        public void OnScreenSelect(CustomScreen screen)
+        {
+            _currentDisplay = screen;
+
+            // Prevent selection when _recorder isn't starting yet.
+            if (_recorder != null)
+            {
+                _recorder.Pause();
+                var option = new RecorderOptions { DisplayOptions = new DisplayOptions { MonitorDeviceName = _currentDisplay.Name } };
+                _recorder.SetOptions(option);
+                _recorder.Resume();
+            }
+        }
 
         /// <summary>
         /// Get all available screens.
@@ -136,31 +134,35 @@ namespace SimpleScreenRecorder.Model
         #endregion
 
         #region Private methods
-        /// <summary>
-        /// Triggered when timer has ticked (1000 / FrameRate).
-        ///
-        /// This function helps making a video with the correct framerate.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Timer_Tick(object sender, System.EventArgs e)
+        private void Rec_OnStatusChanged(object sender, RecordingStatusEventArgs e)
         {
-            using (var bitmap = GetBitmap())
-                _videoWriter.WriteVideoFrame(bitmap, _stopwatch.Elapsed);
+            Console.WriteLine($"RecorderStatus={e.Status}");
+        }
+
+        private void Rec_OnRecordingFailed(object sender, RecordingFailedEventArgs e)
+        {
+            _recorder?.Dispose();
+            _recorder = null;
+        }
+
+        private void Rec_OnRecordingComplete(object sender, RecordingCompleteEventArgs e)
+        {
+            _recorder?.Dispose();
+            _recorder = null;
         }
         #endregion
 
         #region Singleton implementation
-        private static Recorder instance = null;
+        private static ScreenRecorder instance = null;
         private static readonly object padlock = new object();
-        public static Recorder Instance
+        public static ScreenRecorder Instance
         {
             get
             {
                 lock (padlock)
                 {
                     if (instance == null)
-                        instance = new Recorder();
+                        instance = new ScreenRecorder();
                     return instance;
                 }
             }

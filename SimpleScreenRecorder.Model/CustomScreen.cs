@@ -12,7 +12,7 @@ namespace SimpleScreenRecorder.Model
         public int Height { get => NativeScreen.Bounds.Height; }
         public Screen NativeScreen { get; }
 
-        public CustomScreen(Screen native)
+        public CustomScreen (Screen native)
         {
             NativeScreen = native;
         }

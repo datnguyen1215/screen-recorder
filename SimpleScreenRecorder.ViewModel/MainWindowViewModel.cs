@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Forms;
 using SimpleScreenRecorder.Model.Enums;
+using ScreenRecorderLib;
 
 namespace SimpleScreenRecorder.ViewModel
 {
@@ -21,10 +22,10 @@ namespace SimpleScreenRecorder.ViewModel
 
         public MainWindowViewModel()
         {
-            Screens = Recorder.Instance.GetScreens();
-            Recorder.Instance.Paused += Recorder_Paused;
-            Recorder.Instance.Started += Recorder_Started;
-            Recorder.Instance.Stopped += Recorder_Stopped;
+            Screens = ScreenRecorder.Instance.GetScreens();
+            ScreenRecorder.Instance.Paused += Recorder_Paused;
+            ScreenRecorder.Instance.Started += Recorder_Started;
+            ScreenRecorder.Instance.Stopped += Recorder_Stopped;
             HotkeyManager.Instance.HotkeyPressed += HotkeyManager_HotkeyPressed;
             _screenCaptureTimer = new System.Timers.Timer { Interval = 1000 };
             _screenCaptureTimer.Elapsed += ScreenCaptureTimer_Elapsed;
@@ -77,7 +78,7 @@ namespace SimpleScreenRecorder.ViewModel
         {
             DispatcherService.Instance.BeginInvoke(() =>
             {
-                ScreenBitmap = Recorder.Instance.GetBitmapImage();
+                ScreenBitmap = ScreenRecorder.Instance.GetBitmapImage();
             });
         }
 
@@ -87,8 +88,8 @@ namespace SimpleScreenRecorder.ViewModel
         private void OnDisplaySelected(object args)
         {
             _screenCaptureTimer.Start();
-            Recorder.Instance.OnScreenSelect(SelectedScreen);
-            ScreenBitmap = Recorder.Instance.GetBitmapImage();
+            ScreenRecorder.Instance.OnScreenSelect(SelectedScreen);
+            ScreenBitmap = ScreenRecorder.Instance.GetBitmapImage();
         }
 
         /// <summary>
@@ -99,10 +100,10 @@ namespace SimpleScreenRecorder.ViewModel
             _screenCaptureTimer.Stop();
             IsStopButtonEnabled = true;
 
-            if (Recorder.Instance.IsStarted && !Recorder.Instance.IsPaused)
-                Recorder.Instance.Pause();
+            if (ScreenRecorder.Instance.Status == RecorderStatus.Recording)
+                ScreenRecorder.Instance.Pause();
             else
-                Recorder.Instance.Start();
+                ScreenRecorder.Instance.Start();
         }
 
         /// <summary>
@@ -110,9 +111,9 @@ namespace SimpleScreenRecorder.ViewModel
         /// </summary>
         private void StopRecorder()
         {
-            if (Recorder.Instance.IsStarted)
+            if (ScreenRecorder.Instance.Status != RecorderStatus.Idle)
             {
-                Recorder.Instance.Stop();
+                ScreenRecorder.Instance.Stop();
                 ScreenBitmap = null;
                 IsStopButtonEnabled = false;
             }
@@ -128,7 +129,7 @@ namespace SimpleScreenRecorder.ViewModel
         /// </summary>
         private void OnStopButtonClicked(object o) => StopRecorder();
 
-        private void Recorder_Paused(object sender, EventArgs e) => StartPauseButtonText = "Start";
+        private void Recorder_Paused(object sender, EventArgs e) => StartPauseButtonText = "Resume";
         private void Recorder_Stopped(object sender, EventArgs e) => StartPauseButtonText = "Start";
         private void Recorder_Started(object sender, EventArgs e) => StartPauseButtonText = "Pause";
 
